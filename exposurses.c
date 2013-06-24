@@ -23,10 +23,14 @@ char *choices[] = {
 void print_in_middle(WINDOW *win, int starty, int startx, int width, char *string, chtype color);
 
 int main(){
-	ITEM **my_items;
+	ITEM **my_items1;
+	/*Weird, can't just re-use my_items. Must recreate that as well*/
+	ITEM **my_items2;
 	int c;
-	MENU *my_menu;
-	WINDOW *my_menu_win;
+	MENU *my_menu1;
+	MENU *my_menu2;
+	WINDOW *my_menu_win1;
+	WINDOW *my_menu_win2;
 	int n_choices, i;
 
 	/* Initialize curses */
@@ -40,35 +44,52 @@ int main(){
 
 	/* Create items */
 	n_choices = ARRAY_SIZE(choices);
-	my_items = (ITEM **)calloc(n_choices, sizeof(ITEM *));
+	my_items1 = (ITEM **)calloc(n_choices, sizeof(ITEM *));
 	for(i = 0; i < n_choices; ++i)
-		my_items[i] = new_item(choices[i], choices[i]);
+		my_items1[i] = new_item(choices[i], choices[i]);
+	my_items2 = (ITEM **)calloc(n_choices, sizeof(ITEM *));
+	for(i = 0; i < n_choices; ++i)
+		my_items2[i] = new_item(choices[i], choices[i]);
 
 	/* Create menu */
-	my_menu = new_menu((ITEM **)my_items);
+	my_menu1 = new_menu((ITEM **)my_items1);
+	my_menu2 = new_menu((ITEM **)my_items2);
 
 	/* Create the window to be associated with the menu */
-	my_menu_win = newwin(10, 40, 4, 4);
-	keypad(my_menu_win, TRUE);
+	my_menu_win1 = newwin(10, 40, 4, 4);
+	keypad(my_menu_win1, TRUE);
+	my_menu_win2 = newwin(10, 40, 4, 45);
+	keypad(my_menu_win2, TRUE);
 
 	/* Set main window and sub window */
-	set_menu_win(my_menu, my_menu_win);
-	set_menu_sub(my_menu, derwin(my_menu_win, 6, 38, 3, 1));
-	set_menu_format(my_menu, 5, 1);
+	set_menu_win(my_menu1, my_menu_win1);
+	set_menu_sub(my_menu1, derwin(my_menu_win1, 6, 38, 3, 1));
+	set_menu_win(my_menu2, my_menu_win2);
+	set_menu_sub(my_menu2, derwin(my_menu_win2, 6, 38, 3, 1));
+	set_menu_format(my_menu1, 5, 1);
+	set_menu_format(my_menu2, 5, 1);
 
 	/* Set menu mark to the string " * " */
-	set_menu_mark(my_menu, " * ");
+	set_menu_mark(my_menu1, " * ");
+	set_menu_mark(my_menu2, " * ");
 
 	/* Print a border around the main window and print a title */
-	box(my_menu_win, 0, 0);
-	print_in_middle(my_menu_win, 1, 0, 40, "My Menu", COLOR_PAIR(1));
-	mvwaddch(my_menu_win, 2, 0, ACS_LTEE);
-	mvwhline(my_menu_win, 2, 1, ACS_HLINE, 38);
-	mvwaddch(my_menu_win, 2, 39, ACS_RTEE);
+	box(my_menu_win1, 0, 0);
+	box(my_menu_win2, 0, 0);
+	print_in_middle(my_menu_win1, 1, 0, 40, "My Menu1", COLOR_PAIR(1));
+	print_in_middle(my_menu_win2, 1, 0, 40, "My Menu2", COLOR_PAIR(1));
+	mvwaddch(my_menu_win1, 2, 0, ACS_LTEE);
+	mvwaddch(my_menu_win2, 2, 0, ACS_LTEE);
+	mvwhline(my_menu_win1, 2, 1, ACS_HLINE, 38);
+	mvwhline(my_menu_win2, 2, 1, ACS_HLINE, 38);
+	mvwaddch(my_menu_win1, 2, 39, ACS_RTEE);
+	mvwaddch(my_menu_win2, 2, 39, ACS_RTEE);
 
 	/* Post the menu */
-	post_menu(my_menu);
-	wrefresh(my_menu_win);
+	post_menu(my_menu1);
+	post_menu(my_menu2);
+	wrefresh(my_menu_win1);
+	wrefresh(my_menu_win2);
 
 	attron(COLOR_PAIR(2));
 	mvprintw(LINES - 2, 0, "Use PageUp and PageDown to scoll down or up a page of items");
@@ -76,29 +97,32 @@ int main(){
 	attroff(COLOR_PAIR(2));
 	refresh();
 
-	while((c = wgetch(my_menu_win)) != KEY_F(1)){
+	while((c = wgetch(my_menu_win1)) != KEY_F(1)){
 		switch(c){
 			case KEY_DOWN:
-			menu_driver(my_menu, REQ_DOWN_ITEM);
+			menu_driver(my_menu1, REQ_DOWN_ITEM);
+			menu_driver(my_menu2, REQ_DOWN_ITEM);
 			break;
 			case KEY_UP:
-			menu_driver(my_menu, REQ_UP_ITEM);
+			menu_driver(my_menu1, REQ_UP_ITEM);
+			menu_driver(my_menu2, REQ_UP_ITEM);
 			break;
 			case KEY_NPAGE:
-			menu_driver(my_menu, REQ_SCR_DPAGE);
+			menu_driver(my_menu1, REQ_SCR_DPAGE);
 			break;
 			case KEY_PPAGE:
-			menu_driver(my_menu, REQ_SCR_UPAGE);
+			menu_driver(my_menu1, REQ_SCR_UPAGE);
 			break;
 		}
-		wrefresh(my_menu_win);
+		wrefresh(my_menu_win1);
+		wrefresh(my_menu_win2);
 	}	
 
 	/* Unpost and free all the memory taken up */
-	unpost_menu(my_menu);
-	free_menu(my_menu);
+	unpost_menu(my_menu1);
+	free_menu(my_menu1);
 	for(i = 0; i < n_choices; ++i)
-		free_item(my_items[i]);
+		free_item(my_items1[i]);
 	endwin();
 }
 
