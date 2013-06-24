@@ -1,3 +1,5 @@
+/* This file based on menu_scroll.c from:
+   http://tldp.org/HOWTO/NCURSES-Programming-HOWTO/intro.html */
 #include <curses.h>
 #include <menu.h>
 
