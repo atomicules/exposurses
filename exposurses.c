@@ -29,8 +29,10 @@ int main(){
 	int c;
 	MENU *my_menu1;
 	MENU *my_menu2;
+	MENU **my_menu;
 	WINDOW *my_menu_win1;
 	WINDOW *my_menu_win2;
+	WINDOW **my_menu_win;
 	int n_choices, i;
 
 	/* Initialize curses */
@@ -97,27 +99,32 @@ int main(){
 	attroff(COLOR_PAIR(2));
 	refresh();
 
-	while((c = wgetch(my_menu_win1)) != KEY_F(1)){
+
+	while((c = getch())){
 		switch(c){
+			case KEY_LEFT:
+				my_menu = &my_menu1;
+				my_menu_win = &my_menu_win1;
+					break;
+			case KEY_RIGHT:
+				my_menu = &my_menu2;
+				my_menu_win = &my_menu_win2;
+				 break;
 			case KEY_DOWN:
-			menu_driver(my_menu1, REQ_DOWN_ITEM);
-			menu_driver(my_menu2, REQ_DOWN_ITEM);
+			menu_driver(*my_menu, REQ_DOWN_ITEM);
 			break;
 			case KEY_UP:
-			menu_driver(my_menu1, REQ_UP_ITEM);
-			menu_driver(my_menu2, REQ_UP_ITEM);
+			menu_driver(*my_menu, REQ_UP_ITEM);
 			break;
 			case KEY_NPAGE:
-			menu_driver(my_menu1, REQ_SCR_DPAGE);
+			menu_driver(*my_menu, REQ_SCR_DPAGE);
 			break;
 			case KEY_PPAGE:
-			menu_driver(my_menu1, REQ_SCR_UPAGE);
+			menu_driver(*my_menu, REQ_SCR_UPAGE);
 			break;
 		}
-		wrefresh(my_menu_win1);
-		wrefresh(my_menu_win2);
+		wrefresh(*my_menu_win);
 	}	
-
 	/* Unpost and free all the memory taken up */
 	unpost_menu(my_menu1);
 	free_menu(my_menu1);
