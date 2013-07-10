@@ -40,6 +40,8 @@ char *aperture[] = {
 	"f/11",
 	"f/16"
 };
+
+void selection(char *name);
 void print_in_middle(WINDOW *win, int starty, int startx, int width, char *string, chtype color);
 
 int main(){
@@ -73,14 +75,20 @@ int main(){
 	n_shutter = ARRAY_SIZE(shutter);
 	n_aperture = ARRAY_SIZE(aperture);
 	iso_items = (ITEM **)calloc(n_iso, sizeof(ITEM *));
-	for(i = 0; i < n_iso; ++i)
+	for(i = 0; i < n_iso; ++i) {
 		iso_items[i] = new_item(iso[i], iso[i]);
+		set_item_userptr(iso_items[i], selection);
+	}
 	shutter_items = (ITEM **)calloc(n_shutter, sizeof(ITEM *));
-	for(i = 0; i < n_shutter; ++i)
+	for(i = 0; i < n_shutter; ++i){
 		shutter_items[i] = new_item(shutter[i], shutter[i]);
+		set_item_userptr(shutter_items[i], selection);
+	}
 	aperture_items = (ITEM **)calloc(n_aperture, sizeof(ITEM *));
-	for(i = 0; i < n_aperture; ++i)
+	for(i = 0; i < n_aperture; ++i){
 		aperture_items[i] = new_item(aperture[i], aperture[i]);
+		set_item_userptr(aperture_items[i], selection);
+	}
 
 	/* Create menu */
 	iso_menu = new_menu((ITEM **)iso_items);
@@ -165,6 +173,19 @@ int main(){
 			case KEY_PPAGE:
 				menu_driver(*menu, REQ_SCR_UPAGE);
 			break;
+			case 10: /* ENTER */
+			{
+				ITEM *cur;
+				void (*p)(char *);
+
+				cur = current_item(*menu);
+				p = item_userptr(cur);
+				p((char *)item_name(cur));
+				pos_menu_cursor(*menu);
+				break;
+			}
+			break;
+								 
 		}
 		wrefresh(*win);
 	}	
@@ -203,4 +224,11 @@ void print_in_middle(WINDOW *win, int starty, int startx, int width, char *strin
 	mvwprintw(win, y, x, "%s", string);
 	wattroff(win, color);
 	refresh();
+}
+
+void selection(char *name) {
+	/* For now let's just print something */
+	move(0, 0);
+	clrtoeol();
+	mvprintw(0, 0, "Item selected is : %s", name);
 }
