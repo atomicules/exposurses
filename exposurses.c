@@ -154,16 +154,16 @@ int main(){
 				win = &shutter_win;
 				 break;
 			case KEY_DOWN:
-			menu_driver(*menu, REQ_DOWN_ITEM);
+				menu_driver(*menu, REQ_DOWN_ITEM);
 			break;
 			case KEY_UP:
-			menu_driver(*menu, REQ_UP_ITEM);
+				menu_driver(*menu, REQ_UP_ITEM);
 			break;
 			case KEY_NPAGE:
-			menu_driver(*menu, REQ_SCR_DPAGE);
+				menu_driver(*menu, REQ_SCR_DPAGE);
 			break;
 			case KEY_PPAGE:
-			menu_driver(*menu, REQ_SCR_UPAGE);
+				menu_driver(*menu, REQ_SCR_UPAGE);
 			break;
 		}
 		wrefresh(*win);
