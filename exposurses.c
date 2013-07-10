@@ -52,11 +52,11 @@ int main(){
 	int c;
 	MENU *iso_menu;
 	MENU *shutter_menu;
-	MENU **aperture_menu;
+	MENU *aperture_menu;
 	MENU **menu;
 	WINDOW *iso_win;
 	WINDOW *shutter_win;
-	WINDOW **aperture_win;
+	WINDOW *aperture_win;
 	WINDOW **win;
 	int n_iso, i;
 	int n_shutter, j;
