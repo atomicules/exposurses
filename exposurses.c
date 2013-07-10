@@ -13,8 +13,7 @@ char *iso[] = {
 	"400",
 	"800",
 	"1600",
-	"3200",
-	(char *)NULL,
+	"3200"
 };
 
 char *shutter[] = {
@@ -28,8 +27,7 @@ char *shutter[] = {
 	"1/8",
 	"1/4",
 	"1/2",
-	"1",
-	(char *)NULL,
+	"1"
 };
 
 char *aperture[] = {
@@ -40,8 +38,7 @@ char *aperture[] = {
 	"f/5.6",
 	"f/8",
 	"f/11",
-	"f/16",
-	(char *)NULL,
+	"f/16"
 };
 void print_in_middle(WINDOW *win, int starty, int startx, int width, char *string, chtype color);
 
