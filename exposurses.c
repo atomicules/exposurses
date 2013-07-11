@@ -41,21 +41,22 @@ char *aperture[] = {
 	"f/16"
 };
 
+ITEM **iso_items;
+ITEM **shutter_items;
+ITEM **aperture_items;
+MENU *iso_menu;
+MENU *shutter_menu;
+MENU *aperture_menu;
+WINDOW *iso_win;
+WINDOW *shutter_win;
+WINDOW *aperture_win;
+
 void selection(char *name);
 void print_in_middle(WINDOW *win, int starty, int startx, int width, char *string, chtype color);
 
 int main(){
-	ITEM **iso_items;
-	ITEM **shutter_items;
-	ITEM **aperture_items;
 	int c;
-	MENU *iso_menu;
-	MENU *shutter_menu;
-	MENU *aperture_menu;
 	MENU **menu;
-	WINDOW *iso_win;
-	WINDOW *shutter_win;
-	WINDOW *aperture_win;
 	WINDOW **win;
 	int n_iso, i;
 	int n_shutter, j;
@@ -227,8 +228,12 @@ void print_in_middle(WINDOW *win, int starty, int startx, int width, char *strin
 }
 
 void selection(char *name) {
-	/* For now let's just print something */
-	move(0, 0);
-	clrtoeol();
-	mvprintw(0, 0, "Item selected is : %s", name);
+	/* Test setting item in another menu */
+	set_top_row(shutter_menu, 3);
+	/* This works, but plain refreshing doesn't work properly */
+	/* But cheating and using menu_driver to go up/down does */
+	menu_driver(shutter_menu, REQ_DOWN_ITEM);
+	menu_driver(shutter_menu, REQ_UP_ITEM);
+	wrefresh(shutter_win);
+	
 }
