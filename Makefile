@@ -21,4 +21,4 @@ exposurses: ${OBJ}
 
 clean:
 	@echo cleaning
-	@rm -f exposurses
+	@rm -f exposurses ${OBJ}
