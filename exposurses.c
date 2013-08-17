@@ -6,7 +6,7 @@ http://tldp.org/HOWTO/NCURSES-Programming-HOWTO/intro.html */
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 #define CTRLD 	4
 
-char *iso[] = {
+char *iso_array[] = {
 	"50",
 	"100",
 	"200",
@@ -16,7 +16,7 @@ char *iso[] = {
 	"3200"
 };
 
-char *shutter[] = {
+char *shutter_array[] = {
 	"1/1000",
 	"1/500",
 	"1/250",
@@ -30,7 +30,7 @@ char *shutter[] = {
 	"1"
 };
 
-char *aperture[] = {
+char *aperture_array[] = {
 	"f/1.4",
 	"f/2",
 	"f/2.8",
@@ -72,22 +72,22 @@ int main(){
 	init_pair(2, COLOR_CYAN, COLOR_BLACK);
 
 	/* Create items */
-	n_iso = ARRAY_SIZE(iso);
-	n_shutter = ARRAY_SIZE(shutter);
-	n_aperture = ARRAY_SIZE(aperture);
+	n_iso = ARRAY_SIZE(iso_array);
+	n_shutter = ARRAY_SIZE(shutter_array);
+	n_aperture = ARRAY_SIZE(aperture_array);
 	iso_items = (ITEM **)calloc(n_iso, sizeof(ITEM *));
 	for(i = 0; i < n_iso; ++i) {
-		iso_items[i] = new_item(iso[i], iso[i]);
+		iso_items[i] = new_item(iso_array[i], iso_array[i]);
 		set_item_userptr(iso_items[i], selection);
 	}
 	shutter_items = (ITEM **)calloc(n_shutter, sizeof(ITEM *));
 	for(i = 0; i < n_shutter; ++i){
-		shutter_items[i] = new_item(shutter[i], shutter[i]);
+		shutter_items[i] = new_item(shutter_array[i], shutter_array[i]);
 		set_item_userptr(shutter_items[i], selection);
 	}
 	aperture_items = (ITEM **)calloc(n_aperture, sizeof(ITEM *));
 	for(i = 0; i < n_aperture; ++i){
-		aperture_items[i] = new_item(aperture[i], aperture[i]);
+		aperture_items[i] = new_item(aperture_array[i], aperture_array[i]);
 		set_item_userptr(aperture_items[i], selection);
 	}
 
