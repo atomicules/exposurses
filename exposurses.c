@@ -2,6 +2,7 @@
 http://tldp.org/HOWTO/NCURSES-Programming-HOWTO/intro.html */
 #include <curses.h>
 #include <menu.h>
+#include <math.h>
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 #define CTRLD 	4
@@ -53,6 +54,9 @@ WINDOW *aperture_win;
 
 void selection(char *name);
 void print_in_middle(WINDOW *win, int starty, int startx, int width, char *string, chtype color);
+int exposure(int iso);
+double shutter(int exposure, int aperture);
+double aperture(int exposure, int shutter);
 
 int main(){
 	int c;
@@ -235,5 +239,35 @@ void selection(char *name) {
 	menu_driver(shutter_menu, REQ_DOWN_ITEM);
 	menu_driver(shutter_menu, REQ_UP_ITEM);
 	wrefresh(shutter_win);
-	
+
+	/* Need to think about how to do the interaction
+	 *
+	 * Select ISO, but then just one or the other of aperture and shutter speed
+	 * and on return know that adjusting other menu?A
+	 *
+	 * Perhaps a global variable/counter and display text saying "select first column"
+	 * on enter increment counter, change to "select second column"
+	 * then on next enter because of counter value, knows to run equations
+	 * And cycle starts again. 
+	 * Would do for a start
+	 *
+	 * Could even do entering numbers to select columns 1, 2, 3
+	 *
+	 * */
+}
+
+int exposure (int iso) {
+	int ev100;
+	ev100 = 15;
+	return ev100 + (log (iso / 100) / log (2));
+}
+
+double shutter (int aperture, int exposure) {
+	/* EV = log2 (N^2/t) */
+	return pow(aperture, 2) / pow(2, exposure);
+}
+
+double aperture (int shutter, int exposure) {
+	/* EV = log2 (N^2/t) */
+	return shutter * sqrt(pow(2, exposure));
 }
