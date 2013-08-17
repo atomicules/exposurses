@@ -55,6 +55,7 @@ WINDOW *aperture_win;
 void selection(char *name);
 void print_in_middle(WINDOW *win, int starty, int startx, int width, char *string, chtype color);
 int exposure(int iso);
+int selection_counter;
 double shutter(int exposure, int aperture);
 double aperture(int exposure, int shutter);
 
@@ -65,6 +66,9 @@ int main(){
 	int n_iso, i;
 	int n_shutter, j;
 	int n_aperture, k;
+    int menu_counter;
+    menu_counter = 1;
+    selection_counter = 0;
 
 	/* Initialize curses */
 	initscr();
@@ -155,31 +159,59 @@ int main(){
 	attroff(COLOR_PAIR(2));
 	refresh();
 
+    /* set default menu */
+    menu = &iso_menu;
+    win = &iso_win;
 
 	while((c = getch())){
 		switch(c){
 			case KEY_LEFT:
-				menu = &iso_menu;
-				win = &iso_win;
-					break;
+                if (menu_counter > 1)
+                    menu_counter -= 1;
+                switch(menu_counter){
+                    case 1:
+                        menu = &iso_menu;
+                        win = &iso_win;
+                        break;
+                    case 2:
+                        menu = &shutter_menu;
+                        win = &shutter_win;
+                        break;
+                    case 3:
+                        menu = &aperture_menu;
+                        win = &aperture_win;
+                        break;
+                    break;
+                }
+			    break;
 			case KEY_RIGHT:
-				menu = &shutter_menu;
-				win = &shutter_win;
-				 break;
+                if (menu_counter < 3)
+                    menu_counter += 1;
+                switch(menu_counter){
+                    case 1:
+                        menu = &iso_menu;
+                        win = &iso_win;
+                        break;
+                    case 2:
+                        menu = &shutter_menu;
+                        win = &shutter_win;
+                        break;
+                    case 3:
+                        menu = &aperture_menu;
+                        win = &aperture_win;
+                        break;
+                    break;
+                }
+				break;
 			case KEY_DOWN:
 				menu_driver(*menu, REQ_DOWN_ITEM);
-			break;
+	    		break;
 			case KEY_UP:
 				menu_driver(*menu, REQ_UP_ITEM);
-			break;
-			case KEY_NPAGE:
-				menu_driver(*menu, REQ_SCR_DPAGE);
-			break;
-			case KEY_PPAGE:
-				menu_driver(*menu, REQ_SCR_UPAGE);
-			break;
+		    	break;
 			case 10: /* ENTER */
 			{
+                selection_counter += 1;
 				ITEM *cur;
 				void (*p)(char *);
 
