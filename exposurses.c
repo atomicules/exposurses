@@ -67,6 +67,7 @@ int main(){
 	int n_shutter, j;
 	int n_aperture, k;
     int menu_counter;
+	int menu_sel_last;
     menu_counter = 1;
     selection_counter = 0;
 
@@ -209,17 +210,25 @@ int main(){
 			case KEY_UP:
 				menu_driver(*menu, REQ_UP_ITEM);
 		    	break;
-			case 10: /* ENTER */
-			{
-                selection_counter += 1;
-				ITEM *cur;
-				void (*p)(char *);
+			case 10: { /* ENTER */
+				/* Only increment selection counter if on different menu */
+				if (selection_counter == 0) {
+					menu_sel_last = menu_counter;
+					selection_counter += 1;
+				}
+				if (menu_counter != menu_sel_last)
+					selection_counter += 1;
+                if (selection_counter == 2) { 
+                    selection_counter = 0;
+                    ITEM *cur;
+                    void (*p)(char *);
 
-				cur = current_item(*menu);
-				p = item_userptr(cur);
-				p((char *)item_name(cur));
-				pos_menu_cursor(*menu);
-				break;
+                    cur = current_item(*menu);
+                    p = item_userptr(cur);
+                    p((char *)item_name(cur));
+                    pos_menu_cursor(*menu);
+                    break;
+                }
 			}
 			break;
 								 
