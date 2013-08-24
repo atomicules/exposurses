@@ -59,7 +59,7 @@ int selection_counter;
 double shutter(int exposure, int aperture);
 double aperture(int exposure, int shutter);
 
-int main(){
+int main() {
 	int c;
 	MENU **menu;
 	WINDOW **win;
@@ -90,12 +90,12 @@ int main(){
 		set_item_userptr(iso_items[i], selection);
 	}
 	shutter_items = (ITEM **)calloc(n_shutter, sizeof(ITEM *));
-	for(i = 0; i < n_shutter; ++i){
+	for(i = 0; i < n_shutter; ++i) {
 		shutter_items[i] = new_item(shutter_array[i], shutter_array[i]);
 		set_item_userptr(shutter_items[i], selection);
 	}
 	aperture_items = (ITEM **)calloc(n_aperture, sizeof(ITEM *));
-	for(i = 0; i < n_aperture; ++i){
+	for(i = 0; i < n_aperture; ++i) {
 		aperture_items[i] = new_item(aperture_array[i], aperture_array[i]);
 		set_item_userptr(aperture_items[i], selection);
 	}
@@ -164,12 +164,12 @@ int main(){
     menu = &iso_menu;
     win = &iso_win;
 
-	while((c = getch())){
-		switch(c){
+	while((c = getch())) {
+		switch(c) {
 			case KEY_LEFT:
                 if (menu_counter > 1)
                     menu_counter -= 1;
-                switch(menu_counter){
+                switch(menu_counter) {
                     case 1:
                         menu = &iso_menu;
                         win = &iso_win;
@@ -188,7 +188,7 @@ int main(){
 			case KEY_RIGHT:
                 if (menu_counter < 3)
                     menu_counter += 1;
-                switch(menu_counter){
+                switch(menu_counter) {
                     case 1:
                         menu = &iso_menu;
                         win = &iso_win;
@@ -249,7 +249,7 @@ int main(){
 	endwin();
 }
 
-void print_in_middle(WINDOW *win, int starty, int startx, int width, char *string, chtype color){
+void print_in_middle(WINDOW *win, int starty, int startx, int width, char *string, chtype color) {
 	int length, x, y;
 	float temp;
 
