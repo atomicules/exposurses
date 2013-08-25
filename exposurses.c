@@ -72,7 +72,7 @@ int main() {
 	int n_shutter, j;
 	int n_aperture, k;
 	int menu_sel_last;
-    selection_counter = 0;
+	selection_counter = 0;
 
 	/* Initialize curses */
 	initscr();
@@ -163,101 +163,99 @@ int main() {
 	attroff(COLOR_PAIR(2));
 	refresh();
 
-    /* set default menu */
-    menu = &iso_menu;
-    win = &iso_win;
+	/* set default menu */
+	menu = &iso_menu;
+	win = &iso_win;
 
 	while((c = getch())) {
 		switch(c) {
 			case KEY_LEFT:
-                if (menu_counter > 1)
-                    menu_counter -= 1;
-                switch(menu_counter) {
-                    case 1:
-                        menu = &iso_menu;
-                        win = &iso_win;
-                        break;
-                    case 2:
-                        menu = &shutter_menu;
-                        win = &shutter_win;
-                        break;
-                    case 3:
-                        menu = &aperture_menu;
-                        win = &aperture_win;
-                        break;
-                    break;
-                }
-			    break;
+				if (menu_counter > 1)
+					menu_counter -= 1;
+				switch(menu_counter) {
+					case 1:
+						menu = &iso_menu;
+						win = &iso_win;
+						break;
+					case 2:
+						menu = &shutter_menu;
+						win = &shutter_win;
+						break;
+					case 3:
+						menu = &aperture_menu;
+						win = &aperture_win;
+						break;
+				}
+				break;
 			case KEY_RIGHT:
-                if (menu_counter < 3)
-                    menu_counter += 1;
-                switch(menu_counter) {
-                    case 1:
-                        menu = &iso_menu;
-                        win = &iso_win;
-                        break;
-                    case 2:
-                        menu = &shutter_menu;
-                        win = &shutter_win;
-                        break;
-                    case 3:
-                        menu = &aperture_menu;
-                        win = &aperture_win;
-                        break;
-                    break;
-                }
+				if (menu_counter < 3)
+					menu_counter += 1;
+				switch(menu_counter) {
+					case 1:
+						menu = &iso_menu;
+						win = &iso_win;
+						break;
+					case 2:
+						menu = &shutter_menu;
+						win = &shutter_win;
+						break;
+					case 3:
+						menu = &aperture_menu;
+						win = &aperture_win;
+						break;
+				}
 				break;
 			case KEY_DOWN:
 				menu_driver(*menu, REQ_DOWN_ITEM);
-	    		break;
+				break;
 			case KEY_UP:
 				menu_driver(*menu, REQ_UP_ITEM);
-		    	break;
+				break;
 			case 10: { /* ENTER */
-				ITEM *cur;
-				void (*p)(char *);
+				 ITEM *cur;
+				 void (*p)(char *);
 
-				cur = current_item(*menu);
-				p = item_userptr(cur);
-				p((char *)item_name(cur));
-				pos_menu_cursor(*menu);
+				 cur = current_item(*menu);
+				 p = item_userptr(cur);
+				 p((char *)item_name(cur));
+				 pos_menu_cursor(*menu);
 
-				if (selection_counter == 0) {
-					menu_sel_last = menu_counter;
-					selection_counter += 1;
-				}
-				if (menu_counter != menu_sel_last)
-					selection_counter += 1;
-                if (selection_counter == 2) { 
-					/* calculate the other menu */
-					/* how to get missing menu? */
-					if (strcmp("", iso_sel) == 0) {
-						/* Test setting item in menu */
-						set_top_row(iso_menu, 3);
-						/* This works, but plain refreshing doesn't work properly */
-						/* But cheating and using menu_driver to go up/down does */
-						menu_driver(iso_menu, REQ_DOWN_ITEM);
-						menu_driver(iso_menu, REQ_UP_ITEM);
-						wrefresh(iso_win);
-					}
-					if (strcmp("", shutter_sel) == 0) {
-						set_top_row(shutter_menu, 3);
-						menu_driver(shutter_menu, REQ_DOWN_ITEM);
-						menu_driver(shutter_menu, REQ_UP_ITEM);
-						wrefresh(shutter_win);
-					}
-					if (strcmp("", aperture_sel) == 0) {
-						set_top_row(aperture_menu, 3);
-						menu_driver(aperture_menu, REQ_DOWN_ITEM);
-						menu_driver(aperture_menu, REQ_UP_ITEM);
-						wrefresh(aperture_win);
-					}
-					/* clear the selections for next time */
-                    selection_counter = 0;
-					strcpy(iso_sel, "");
-					strcpy(shutter_sel, "");
-					strcpy(aperture_sel, "");
-					break;
+				 if (selection_counter == 0) {
+					 menu_sel_last = menu_counter;
+					 selection_counter += 1;
+				 }
+				 if (menu_counter != menu_sel_last)
+					 selection_counter += 1;
+				 if (selection_counter == 2) { 
+					 /* calculate the other menu */
+					 /* how to get missing menu? */
+					 if (strcmp("", iso_sel) == 0) {
+						 /* Test setting item in menu */
+						 set_top_row(iso_menu, 3);
+						 /* This works, but plain refreshing doesn't work properly */
+						 /* But cheating and using menu_driver to go up/down does */
+						 menu_driver(iso_menu, REQ_DOWN_ITEM);
+						 menu_driver(iso_menu, REQ_UP_ITEM);
+						 wrefresh(iso_win);
+					 }
+					 if (strcmp("", shutter_sel) == 0) {
+						 set_top_row(shutter_menu, 3);
+						 menu_driver(shutter_menu, REQ_DOWN_ITEM);
+						 menu_driver(shutter_menu, REQ_UP_ITEM);
+						 wrefresh(shutter_win);
+					 }
+					 if (strcmp("", aperture_sel) == 0) {
+						 set_top_row(aperture_menu, 3);
+						 menu_driver(aperture_menu, REQ_DOWN_ITEM);
+						 menu_driver(aperture_menu, REQ_UP_ITEM);
+						 wrefresh(aperture_win);
+					 }
+					 /* clear the selections for next time */
+					 selection_counter = 0;
+					 strcpy(iso_sel, "");
+					 strcpy(shutter_sel, "");
+					 strcpy(aperture_sel, "");
+					 break;
 				}
 			break;
 			}
@@ -312,8 +310,6 @@ void selection(char *name) {
 		case 3:
 			strcpy(aperture_sel, name);
 			break;
-		break;
-	break;
 	}
 }
 
