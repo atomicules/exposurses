@@ -59,6 +59,11 @@ int selection_counter;
 double shutter(int exposure, int aperture);
 double aperture(int exposure, int shutter);
 
+char iso_sel[5] = "";
+char shutter_sel[7] = "";
+char aperture_sel[6] = "";
+int menu_counter = 1;
+
 int main() {
 	int c;
 	MENU **menu;
@@ -66,9 +71,7 @@ int main() {
 	int n_iso, i;
 	int n_shutter, j;
 	int n_aperture, k;
-    int menu_counter;
 	int menu_sel_last;
-    menu_counter = 1;
     selection_counter = 0;
 
 	/* Initialize curses */
@@ -211,7 +214,14 @@ int main() {
 				menu_driver(*menu, REQ_UP_ITEM);
 		    	break;
 			case 10: { /* ENTER */
-				/* Only increment selection counter if on different menu */
+				ITEM *cur;
+				void (*p)(char *);
+
+				cur = current_item(*menu);
+				p = item_userptr(cur);
+				p((char *)item_name(cur));
+				pos_menu_cursor(*menu);
+
 				if (selection_counter == 0) {
 					menu_sel_last = menu_counter;
 					selection_counter += 1;
@@ -219,19 +229,38 @@ int main() {
 				if (menu_counter != menu_sel_last)
 					selection_counter += 1;
                 if (selection_counter == 2) { 
+					/* calculate the other menu */
+					/* how to get missing menu? */
+					if (strcmp("", iso_sel) == 0) {
+						/* Test setting item in menu */
+						set_top_row(iso_menu, 3);
+						/* This works, but plain refreshing doesn't work properly */
+						/* But cheating and using menu_driver to go up/down does */
+						menu_driver(iso_menu, REQ_DOWN_ITEM);
+						menu_driver(iso_menu, REQ_UP_ITEM);
+						wrefresh(iso_win);
+					}
+					if (strcmp("", shutter_sel) == 0) {
+						set_top_row(shutter_menu, 3);
+						menu_driver(shutter_menu, REQ_DOWN_ITEM);
+						menu_driver(shutter_menu, REQ_UP_ITEM);
+						wrefresh(shutter_win);
+					}
+					if (strcmp("", aperture_sel) == 0) {
+						set_top_row(aperture_menu, 3);
+						menu_driver(aperture_menu, REQ_DOWN_ITEM);
+						menu_driver(aperture_menu, REQ_UP_ITEM);
+						wrefresh(aperture_win);
+					}
+					/* clear the selections for next time */
                     selection_counter = 0;
-                    ITEM *cur;
-                    void (*p)(char *);
-
-                    cur = current_item(*menu);
-                    p = item_userptr(cur);
-                    p((char *)item_name(cur));
-                    pos_menu_cursor(*menu);
-                    break;
-                }
-			}
+					strcpy(iso_sel, "");
+					strcpy(shutter_sel, "");
+					strcpy(aperture_sel, "");
+					break;
+				}
 			break;
-								 
+			}
 		}
 		wrefresh(*win);
 	}	
@@ -273,28 +302,19 @@ void print_in_middle(WINDOW *win, int starty, int startx, int width, char *strin
 }
 
 void selection(char *name) {
-	/* Test setting item in another menu */
-	set_top_row(shutter_menu, 3);
-	/* This works, but plain refreshing doesn't work properly */
-	/* But cheating and using menu_driver to go up/down does */
-	menu_driver(shutter_menu, REQ_DOWN_ITEM);
-	menu_driver(shutter_menu, REQ_UP_ITEM);
-	wrefresh(shutter_win);
-
-	/* Need to think about how to do the interaction
-	 *
-	 * Select ISO, but then just one or the other of aperture and shutter speed
-	 * and on return know that adjusting other menu?A
-	 *
-	 * Perhaps a global variable/counter and display text saying "select first column"
-	 * on enter increment counter, change to "select second column"
-	 * then on next enter because of counter value, knows to run equations
-	 * And cycle starts again. 
-	 * Would do for a start
-	 *
-	 * Could even do entering numbers to select columns 1, 2, 3
-	 *
-	 * */
+	switch(menu_counter) {
+		case 1:
+			strcpy(iso_sel, name);
+			break;
+		case 2:
+			strcpy(shutter_sel, name);
+			break;
+		case 3:
+			strcpy(aperture_sel, name);
+			break;
+		break;
+	break;
+	}
 }
 
 int exposure (int iso) {
