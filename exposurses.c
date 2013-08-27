@@ -328,5 +328,5 @@ double shutter (int aperture, int exposure) {
 
 double aperture (int shutter, int exposure) {
 	/* EV = log2 (N^2/t) */
-	return shutter * sqrt(pow(2, exposure));
+	return sqrt(pow(2, exposure) * shutter);
 }
