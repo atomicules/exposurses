@@ -56,7 +56,7 @@ void selection(char *name);
 void print_in_middle(WINDOW *win, int starty, int startx, int width, char *string, chtype color);
 int exposure(int iso);
 int selection_counter;
-double shutter(int exposure, int aperture);
+double shutter(int exposure, double aperture);
 double aperture(int exposure, int shutter);
 
 char iso_sel[5] = "";
@@ -321,12 +321,12 @@ int exposure (int iso) {
 	return ev100 + (log (iso / 100) / log (2));
 }
 
-double shutter (int aperture, int exposure) {
+double shutter (int exposure, double aperture) {
 	/* EV = log2 (N^2/t) */
 	return pow(aperture, 2) / pow(2, exposure);
 }
 
-double aperture (int shutter, int exposure) {
+double aperture (int exposure, int shutter) {
 	/* EV = log2 (N^2/t) */
 	return sqrt(pow(2, exposure) * shutter);
 }
