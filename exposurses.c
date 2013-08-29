@@ -14,7 +14,8 @@ char *iso_array[] = {
 	"400",
 	"800",
 	"1600",
-	"3200"
+	"3200",
+	NULL
 };
 
 char *shutter_array[] = {
@@ -28,7 +29,8 @@ char *shutter_array[] = {
 	"1/8",
 	"1/4",
 	"1/2",
-	"1"
+	"1",
+	NULL
 };
 
 char *aperture_array[] = {
@@ -39,7 +41,8 @@ char *aperture_array[] = {
 	"f/5.6",
 	"f/8",
 	"f/11",
-	"f/16"
+	"f/16",
+	NULL
 };
 
 ITEM **iso_items;
@@ -58,6 +61,8 @@ int exposure(int iso);
 int selection_counter;
 double shutter(int exposure, double aperture);
 double aperture(int exposure, int shutter);
+int nearest_match(double x, int menu);
+double fraction_to_double(char *fraction);
 
 char iso_sel[5] = "";
 char shutter_sel[7] = "";
@@ -230,23 +235,32 @@ int main() {
 					/* calculate the other menu */
 					/* how to get missing menu? */
 					if (strcmp("", iso_sel) == 0) {
+						/* Test searching for item in menu */
 						set_menu_pattern(iso_menu, "200");
-
-						/* Test setting item in menu
-							set_top_row(iso_menu, 3);
-						/* This works, but plain refreshing doesn't work properly */
-						/* But cheating and using menu_driver to go up/down does */
+						/* Using menu_driver to go up/down to force refresh */
 						menu_driver(iso_menu, REQ_DOWN_ITEM);
 						menu_driver(iso_menu, REQ_UP_ITEM);
 						wrefresh(iso_win);
 					}
 					if (strcmp("", shutter_sel) == 0) {
+						/* Test finding nearest matching value in array? */
+						char aperture_sel_[4] = "";
+						strncpy(aperture_sel_, aperture_sel+2, 3);
+						/* There is probably a nicer way to format the below */
+						set_menu_pattern(
+							shutter_menu,
+							shutter_array[nearest_match(
+								shutter(aperture_sel_, exposure(iso_sel)),
+								2
+							)]
+						);
 						set_top_row(shutter_menu, 3);
 						menu_driver(shutter_menu, REQ_DOWN_ITEM);
 						menu_driver(shutter_menu, REQ_UP_ITEM);
 						wrefresh(shutter_win);
 					}
 					if (strcmp("", aperture_sel) == 0) {
+						/* Tests setting to row number */
 						set_top_row(aperture_menu, 3);
 						menu_driver(aperture_menu, REQ_DOWN_ITEM);
 						menu_driver(aperture_menu, REQ_UP_ITEM);
@@ -329,4 +343,76 @@ double shutter (int exposure, double aperture) {
 double aperture (int exposure, int shutter) {
 	/* EV = log2 (N^2/t) */
 	return sqrt(pow(2, exposure) * shutter);
+}
+
+int nearest_match (double x, int menu) {
+	/* Need to search array for closest match */
+	int n;
+	int diff_idx = 0;
+	char array_value_str[7];
+	double array_value_db;
+	double diff;
+
+	/* Need a starting value for difference */
+	switch(menu) {
+		case 1:
+			array_value_db = strtod(iso_array[0], NULL);
+			break;
+		case 2:
+			array_value_db = fraction_to_double(shutter_array[0]);
+			break;
+		case 3:
+			strncpy(array_value_str, aperture_array[0]+2, 3);
+			array_value_db = strtod(array_value_str, NULL);
+			break;
+	}
+	diff = abs(array_value_db - x);
+	/* lots of repetition here but pointers to arrays seem to be a bad thing */
+	switch(menu) {
+		case 1:
+			for ( n = 1; iso_array[n] != NULL; ++n ) {
+				array_value_db = strtod(iso_array[n], NULL);
+				if (abs(array_value_db - x) < diff) { 
+					diff_idx = n;
+					diff = abs(array_value_db - x);
+				}
+			}
+			break;
+		case 2:
+			for ( n = 1; iso_array[n] != NULL; ++n ) {
+				array_value_db = fraction_to_double(shutter_array[n]);
+				if (abs(array_value_db - x) < diff) {
+					diff_idx = n;
+					diff = abs(array_value_db - x);
+				}
+			}
+			break;
+		case 3:
+			for ( n = 1; iso_array[n] != NULL; ++n ) {
+				strncpy(array_value_str, aperture_array[0]+2, 3);
+				array_value_db = strtod(array_value_str, NULL);
+				if (abs(array_value_db - x) < diff) { 
+					diff_idx = n;
+					diff = abs(array_value_db - x);
+				}
+			}
+			break;
+	}
+	return diff_idx;
+}
+
+double fraction_to_double(char *fraction) {
+	double fraction_as_db;
+	char denominator[5];
+	char *ptr = strchr(fraction, "/");
+
+	if (ptr) {
+		/*then split*/
+		strncpy(denominator, fraction+2, 5);
+		fraction_as_db = 1/strtod(denominator, NULL);
+	}
+	else {
+		fraction_as_db = strtod(fraction, NULL);
+	}
+return fraction_as_db;
 }
