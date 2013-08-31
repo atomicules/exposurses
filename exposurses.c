@@ -5,7 +5,6 @@ http://tldp.org/HOWTO/NCURSES-Programming-HOWTO/intro.html */
 #include <math.h>
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
-#define CTRLD 	4
 
 char *iso_array[] = {
 	"50",
