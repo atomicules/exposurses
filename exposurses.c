@@ -62,10 +62,10 @@ double shutter(int exposure, double aperture);
 double aperture(int exposure, int shutter);
 int nearest_match(double x, int menu);
 double fraction_to_double(char *fraction);
-
-char iso_sel[5] = "";
-char shutter_sel[7] = "";
-char aperture_sel[6] = "";
+/* No one will ever need more than 9 bytes! */
+char iso_sel[9] = "";
+char shutter_sel[9] = "";
+char aperture_sel[9] = "";
 int menu_counter = 1;
 
 int main() {
@@ -348,7 +348,7 @@ int nearest_match (double x, int menu) {
 	/* Need to search array for closest match */
 	int n;
 	int diff_idx = 0;
-	char array_value_str[7];
+	char array_value_str[9];
 	double array_value_db;
 	double diff;
 
@@ -402,7 +402,7 @@ int nearest_match (double x, int menu) {
 
 double fraction_to_double(char *fraction) {
 	double fraction_as_db;
-	char denominator[5];
+	char denominator[9];
 	char *ptr = strchr(fraction, "/");
 
 	if (ptr) {
