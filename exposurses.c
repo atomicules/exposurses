@@ -3,6 +3,7 @@ http://tldp.org/HOWTO/NCURSES-Programming-HOWTO/intro.html */
 #include <curses.h>
 #include <menu.h>
 #include <math.h>
+#include <stdlib.h>
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 
@@ -249,11 +250,10 @@ int main() {
 						set_menu_pattern(
 							shutter_menu,
 							shutter_array[nearest_match(
-								shutter(aperture_sel_, exposure(iso_sel)),
+								shutter(strtod(aperture_sel_, NULL), exposure(atoi(iso_sel))),
 								2
 							)]
 						);
-						set_top_row(shutter_menu, 3);
 						menu_driver(shutter_menu, REQ_DOWN_ITEM);
 						menu_driver(shutter_menu, REQ_UP_ITEM);
 						wrefresh(shutter_win);
@@ -365,34 +365,34 @@ int nearest_match (double x, int menu) {
 			array_value_db = strtod(array_value_str, NULL);
 			break;
 	}
-	diff = abs(array_value_db - x);
+	diff = fabs(array_value_db - x);
 	/* lots of repetition here but pointers to arrays seem to be a bad thing */
 	switch(menu) {
 		case 1:
 			for ( n = 1; iso_array[n] != NULL; ++n ) {
 				array_value_db = strtod(iso_array[n], NULL);
-				if (abs(array_value_db - x) < diff) { 
+				if (fabs(array_value_db - x) < diff) { 
 					diff_idx = n;
-					diff = abs(array_value_db - x);
+					diff = fabs(array_value_db - x);
 				}
 			}
 			break;
 		case 2:
-			for ( n = 1; iso_array[n] != NULL; ++n ) {
+			for ( n = 1; shutter_array[n] != NULL; ++n ) {
 				array_value_db = fraction_to_double(shutter_array[n]);
-				if (abs(array_value_db - x) < diff) {
+				if (fabs(array_value_db - x) < diff) {
 					diff_idx = n;
-					diff = abs(array_value_db - x);
+					diff = fabs(array_value_db - x);
 				}
 			}
 			break;
 		case 3:
-			for ( n = 1; iso_array[n] != NULL; ++n ) {
+			for ( n = 1; aperture_array[n] != NULL; ++n ) {
 				strncpy(array_value_str, aperture_array[0]+2, 3);
 				array_value_db = strtod(array_value_str, NULL);
-				if (abs(array_value_db - x) < diff) { 
+				if (fabs(array_value_db - x) < diff) { 
 					diff_idx = n;
-					diff = abs(array_value_db - x);
+					diff = fabs(array_value_db - x);
 				}
 			}
 			break;
@@ -403,15 +403,20 @@ int nearest_match (double x, int menu) {
 double fraction_to_double(char *fraction) {
 	double fraction_as_db;
 	char denominator[9];
-	char *ptr = strchr(fraction, "/");
+	char *ptr = strstr(fraction, "/");
 
 	if (ptr) {
 		/*then split*/
 		strncpy(denominator, fraction+2, 5);
-		fraction_as_db = 1/strtod(denominator, NULL);
+		fraction_as_db = 1 / strtod(denominator, NULL);
 	}
 	else {
 		fraction_as_db = strtod(fraction, NULL);
 	}
 return fraction_as_db;
 }
+
+/* Debug lines
+ * sprintf(temp, "%f", x);
+ * mvprintw(LINES - 4, 0, temp);
+ * refresh();*/
