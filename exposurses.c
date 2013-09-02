@@ -5,6 +5,7 @@ http://tldp.org/HOWTO/NCURSES-Programming-HOWTO/intro.html */
 #include <math.h>
 #include <stdlib.h>
 
+/* Learning notes - This is a macro that is expanded (text substitution) before compiling */
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 
 char *iso_array[] = {
@@ -172,7 +173,7 @@ int main() {
 	menu = &iso_menu;
 	win = &iso_win;
 
-	while((c = getch()) != 81) {
+	while((c = getch()) != 81) { /* 81 is Q */
 		switch(c) {
 			case KEY_LEFT:
 				if (menu_counter > 1)
@@ -222,8 +223,8 @@ int main() {
 
 				cur = current_item(*menu);
 				p = item_userptr(cur);
+				/* Learning notes - Don't understand this bit */
 				p((char *)item_name(cur));
-				pos_menu_cursor(*menu);
 
 				if (selection_counter == 0) {
 					 menu_sel_last = menu_counter;
@@ -237,7 +238,6 @@ int main() {
 					if (strcmp("", iso_sel) == 0) {
 						/* Test searching for item in menu */
 						set_menu_pattern(iso_menu, "200");
-						/* Using menu_driver to go up/down to force refresh */
 						menu_driver(iso_menu, REQ_DOWN_ITEM);
 						menu_driver(iso_menu, REQ_UP_ITEM);
 						wrefresh(iso_win);
@@ -245,6 +245,9 @@ int main() {
 					if (strcmp("", shutter_sel) == 0) {
 						char aperture_sel_[4] = "";
 						strncpy(aperture_sel_, aperture_sel+2, 3);
+						/* Using menu_driver to go up/down to force refresh and correct highlighting */
+						menu_driver(shutter_menu, REQ_SCR_UPAGE);
+						menu_driver(shutter_menu, REQ_SCR_DPAGE);
 						/* There is probably a nicer way to format the below */
 						set_menu_pattern(
 							shutter_menu,
@@ -258,6 +261,8 @@ int main() {
 						wrefresh(shutter_win);
 					}
 					if (strcmp("", aperture_sel) == 0) {
+						menu_driver(aperture_menu, REQ_SCR_UPAGE);
+						menu_driver(aperture_menu, REQ_SCR_DPAGE);
 						set_menu_pattern(
 							aperture_menu,
 							aperture_array[nearest_match(
