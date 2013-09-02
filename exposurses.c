@@ -250,7 +250,7 @@ int main() {
 						set_menu_pattern(
 							shutter_menu,
 							shutter_array[nearest_match(
-								shutter(strtod(aperture_sel_, NULL), exposure(atoi(iso_sel))),
+								shutter(exposure(atoi(iso_sel)), strtod(aperture_sel_, NULL)),
 								2
 							)]
 						);
