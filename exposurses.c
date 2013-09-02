@@ -163,8 +163,8 @@ int main() {
 	wrefresh(aperture_win);
 
 	attron(COLOR_PAIR(2));
-	mvprintw(LINES - 2, 0, "Use PageUp and PageDown to scoll down or up a page of items");
-	mvprintw(LINES - 1, 0, "Arrow Keys to navigate (F1 to Exit)");
+	mvprintw(LINES - 2, 0, "Select ISO and then one of Shutter/Aperture to calculate other of Shutter/Aperture");
+	mvprintw(LINES - 1, 0, "Arrow keys to navigate, Enter to select, Q to exit");
 	attroff(COLOR_PAIR(2));
 	refresh();
 
@@ -172,7 +172,7 @@ int main() {
 	menu = &iso_menu;
 	win = &iso_win;
 
-	while((c = getch())) {
+	while((c = getch()) != 81) {
 		switch(c) {
 			case KEY_LEFT:
 				if (menu_counter > 1)
