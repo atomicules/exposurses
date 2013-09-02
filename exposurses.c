@@ -60,7 +60,7 @@ void print_in_middle(WINDOW *win, int starty, int startx, int width, char *strin
 int exposure(int iso);
 int selection_counter;
 double shutter(int exposure, double aperture);
-double aperture(int exposure, int shutter);
+double aperture(int exposure, double shutter);
 int nearest_match(double x, int menu);
 double fraction_to_double(char *fraction);
 /* No one will ever need more than 9 bytes! */
@@ -243,7 +243,6 @@ int main() {
 						wrefresh(iso_win);
 					}
 					if (strcmp("", shutter_sel) == 0) {
-						/* Test finding nearest matching value in array? */
 						char aperture_sel_[4] = "";
 						strncpy(aperture_sel_, aperture_sel+2, 3);
 						/* There is probably a nicer way to format the below */
@@ -259,8 +258,13 @@ int main() {
 						wrefresh(shutter_win);
 					}
 					if (strcmp("", aperture_sel) == 0) {
-						/* Tests setting to row number */
-						set_top_row(aperture_menu, 3);
+						set_menu_pattern(
+							aperture_menu,
+							aperture_array[nearest_match(
+								aperture(exposure(atoi(iso_sel)), fraction_to_double(shutter_sel)),
+								3
+							)]
+						);
 						menu_driver(aperture_menu, REQ_DOWN_ITEM);
 						menu_driver(aperture_menu, REQ_UP_ITEM);
 						wrefresh(aperture_win);
@@ -339,7 +343,7 @@ double shutter (int exposure, double aperture) {
 	return pow(aperture, 2) / pow(2, exposure);
 }
 
-double aperture (int exposure, int shutter) {
+double aperture (int exposure, double shutter) {
 	/* EV = log2 (N^2/t) */
 	return sqrt(pow(2, exposure) * shutter);
 }
@@ -361,7 +365,7 @@ int nearest_match (double x, int menu) {
 			array_value_db = fraction_to_double(shutter_array[0]);
 			break;
 		case 3:
-			strncpy(array_value_str, aperture_array[0]+2, 3);
+			strncpy(array_value_str, aperture_array[0]+2, 4);
 			array_value_db = strtod(array_value_str, NULL);
 			break;
 	}
@@ -388,7 +392,7 @@ int nearest_match (double x, int menu) {
 			break;
 		case 3:
 			for ( n = 1; aperture_array[n] != NULL; ++n ) {
-				strncpy(array_value_str, aperture_array[0]+2, 3);
+				strncpy(array_value_str, aperture_array[n]+2, 4);
 				array_value_db = strtod(array_value_str, NULL);
 				if (fabs(array_value_db - x) < diff) { 
 					diff_idx = n;
