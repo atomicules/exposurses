@@ -89,7 +89,6 @@ WINDOW *aperture_win;
 void selection(char *name);
 void print_in_middle(WINDOW *win, int starty, int startx, int width, char *string, chtype color);
 int exposure(int iso);
-int selection_counter;
 double shutter(int exposure, double aperture);
 double aperture(int exposure, double shutter);
 int nearest_match(double x, int menu);
@@ -99,6 +98,7 @@ char exposure_sel[9] = "";
 char iso_sel[9] = "";
 char shutter_sel[9] = "";
 char aperture_sel[9] = "";
+int selection_counter = 1;
 int menu_counter = 1;
 
 int main() {
@@ -110,8 +110,6 @@ int main() {
 	int n_iso;
 	int n_shutter;
 	int n_aperture;
-	int menu_sel_last;
-	selection_counter = 0;
 
 	/* Initialize curses */
 	initscr();
@@ -218,51 +216,30 @@ int main() {
 	wrefresh(aperture_win);
 
 	attron(COLOR_PAIR(2));
-	mvprintw(LINES - 2, 0, "Select ISO and then one of Shutter/Aperture to calculate other of Shutter/Aperture");
+	mvprintw(LINES - 2, 0, "Select EV");
+	/*mvprintw(LINES - 2, 0, "Select ISO and then one of Shutter/Aperture to calculate other of Shutter/Aperture");*/
 	mvprintw(LINES - 1, 0, "Arrow keys to navigate, Enter to select, Q to exit");
 	attroff(COLOR_PAIR(2));
 	refresh();
 
 	/* set default menu */
-	menu = &iso_menu;
-	win = &iso_win;
+	menu = &exposure_menu;
+	win = &exposure_win;
 
 	while((c = getch()) != 81) { /* 81 is Q */
 		switch(c) {
 			case KEY_LEFT:
-				if (menu_counter > 1)
-					menu_counter -= 1;
-				switch(menu_counter) {
-					case 1:
-						menu = &iso_menu;
-						win = &iso_win;
-						break;
-					case 2:
-						menu = &shutter_menu;
-						win = &shutter_win;
-						break;
-					case 3:
-						menu = &aperture_menu;
-						win = &aperture_win;
-						break;
+				if (selection_counter > 2) {
+					menu_counter = 3;
+					menu = &shutter_menu;
+					win = &shutter_win;
 				}
 				break;
 			case KEY_RIGHT:
-				if (menu_counter < 3)
-					menu_counter += 1;
-				switch(menu_counter) {
-					case 1:
-						menu = &iso_menu;
-						win = &iso_win;
-						break;
-					case 2:
-						menu = &shutter_menu;
-						win = &shutter_win;
-						break;
-					case 3:
-						menu = &aperture_menu;
-						win = &aperture_win;
-						break;
+				if (selection_counter > 2) {
+					menu_counter = 4;
+					menu = &aperture_menu;
+					win = &aperture_win;
 				}
 				break;
 			case KEY_DOWN:
@@ -279,69 +256,86 @@ int main() {
 				p = item_userptr(cur);
 				/* Learning notes - Don't understand this bit */
 				p((char *)item_name(cur));
-
-				if (selection_counter == 0) {
-					 menu_sel_last = menu_counter;
-					 selection_counter += 1;
-				}
-				if (menu_counter != menu_sel_last)
-					 selection_counter += 1;
-				if (selection_counter == 2) { 
-					/* calculate the other menu */
-					/* how to get missing menu? */
-					if (strcmp("", iso_sel) == 0) {
-						/* Test searching for item in menu */
-						set_menu_pattern(iso_menu, "200");
-						menu_driver(iso_menu, REQ_DOWN_ITEM);
-						menu_driver(iso_menu, REQ_UP_ITEM);
-						wrefresh(iso_win);
+				
+				switch (selection_counter) {
+					case 1: { /* Exposure selected */
+						selection_counter += 1;
+						menu_counter += 1;
+						move(LINES - 2, 0);
+						clrtoeol();
+						mvprintw(LINES - 2, 0, "Select ISO");
+						refresh();
+						menu = &iso_menu;
+						win = &iso_win;
 					}
-					if (strcmp("", shutter_sel) == 0) {
-						char aperture_sel_[4] = "";
-						strncpy(aperture_sel_, aperture_sel+2, 3);
-						/* Using menu_driver to go up/down to force refresh and correct highlighting */
-						menu_driver(shutter_menu, REQ_SCR_UPAGE);
-						menu_driver(shutter_menu, REQ_SCR_DPAGE);
-						/* There is probably a nicer way to format the below */
-						set_menu_pattern(
-							shutter_menu,
-							shutter_array[nearest_match(
-								shutter(exposure(atoi(iso_sel)), strtod(aperture_sel_, NULL)),
-								2
-							)]
-						);
-						menu_driver(shutter_menu, REQ_DOWN_ITEM);
-						menu_driver(shutter_menu, REQ_UP_ITEM);
-						wrefresh(shutter_win);
+					break;
+					case 2: { /* ISO Selected */
+						selection_counter += 1;
+						menu_counter += 1;
+						move(LINES - 2, 0);
+						clrtoeol();
+						mvprintw(LINES - 2, 0, "Select Shutter or Aperture");
+						refresh();
+						menu = &shutter_menu;
+						win = &shutter_win;
 					}
-					if (strcmp("", aperture_sel) == 0) {
-						menu_driver(aperture_menu, REQ_SCR_UPAGE);
-						menu_driver(aperture_menu, REQ_SCR_DPAGE);
-						set_menu_pattern(
-							aperture_menu,
-							aperture_array[nearest_match(
-								aperture(exposure(atoi(iso_sel)), fraction_to_double(shutter_sel)),
-								3
-							)]
-						);
-						menu_driver(aperture_menu, REQ_DOWN_ITEM);
-						menu_driver(aperture_menu, REQ_UP_ITEM);
-						wrefresh(aperture_win);
+					break;
+					case 3: { /* Shutter or Aperture selected */
+						if (strcmp("", shutter_sel) == 0) {
+							char aperture_sel_[4] = "";
+							strncpy(aperture_sel_, aperture_sel+2, 3);
+							/* Using menu_driver to go up/down to force refresh and correct highlighting */
+							menu_driver(shutter_menu, REQ_SCR_UPAGE);
+							menu_driver(shutter_menu, REQ_SCR_DPAGE);
+							/* There is probably a nicer way to format the below */
+							set_menu_pattern(
+								shutter_menu,
+								shutter_array[nearest_match(
+									shutter(exposure(atoi(iso_sel)), strtod(aperture_sel_, NULL)),
+									2
+								)]
+							);
+							menu_driver(shutter_menu, REQ_DOWN_ITEM);
+							menu_driver(shutter_menu, REQ_UP_ITEM);
+							wrefresh(shutter_win);
+						}
+						if (strcmp("", aperture_sel) == 0) {
+							menu_driver(aperture_menu, REQ_SCR_UPAGE);
+							menu_driver(aperture_menu, REQ_SCR_DPAGE);
+							set_menu_pattern(
+								aperture_menu,
+								aperture_array[nearest_match(
+									aperture(exposure(atoi(iso_sel)), fraction_to_double(shutter_sel)),
+									3
+								)]
+							);
+							menu_driver(aperture_menu, REQ_DOWN_ITEM);
+							menu_driver(aperture_menu, REQ_UP_ITEM);
+							wrefresh(aperture_win);
+						}
+						/* clear the selections for next time */
+						strcpy(iso_sel, "");
+						strcpy(shutter_sel, "");
+						strcpy(aperture_sel, "");
+						/* And set defaults back to start */
+						selection_counter = 1;
+						menu_counter = 1;
+						menu = &exposure_menu;
+						win = &exposure_win;
+						move(LINES - 2, 0);
+						clrtoeol();
+						mvprintw(LINES - 2, 0, "Select EV");
+						refresh();
 					}
-					/* clear the selections for next time */
-					selection_counter = 0;
-					strcpy(iso_sel, "");
-					strcpy(shutter_sel, "");
-					strcpy(aperture_sel, "");
 					break;
 				}
-				break;
 			}
+			break;
 		}
 		wrefresh(*win);
 	}	
 	/* Unpost and free all the memory taken up */
-	unpost_menu(expsoure_menu);
+	unpost_menu(exposure_menu);
 	unpost_menu(iso_menu);
 	unpost_menu(shutter_menu);
 	unpost_menu(aperture_menu);
@@ -386,12 +380,15 @@ void print_in_middle(WINDOW *win, int starty, int startx, int width, char *strin
 void selection(char *name) {
 	switch(menu_counter) {
 		case 1:
-			strcpy(iso_sel, name);
+			strcpy(exposure_sel, name);
 			break;
 		case 2:
-			strcpy(shutter_sel, name);
+			strcpy(iso_sel, name);
 			break;
 		case 3:
+			strcpy(shutter_sel, name);
+			break;
+		case 4:
 			strcpy(aperture_sel, name);
 			break;
 	}
@@ -482,7 +479,7 @@ double fraction_to_double(char *fraction) {
 	else {
 		fraction_as_db = strtod(fraction, NULL);
 	}
-return fraction_as_db;
+	return fraction_as_db;
 }
 
 /* Debug lines
