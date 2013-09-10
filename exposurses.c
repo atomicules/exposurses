@@ -87,6 +87,8 @@ WINDOW *shutter_win;
 WINDOW *aperture_win;
 
 void selection(char *name);
+void add_menu(char **array, ITEM **items, MENU *men, WINDOW *win, int n, int xpos, char *title);
+void remove_menu(ITEM **items, MENU *men, int n);
 void print_in_middle(WINDOW *win, int starty, int startx, int width, char *string, chtype color);
 int exposure(int iso);
 double shutter(int exposure, double aperture);
@@ -121,99 +123,15 @@ int main() {
 	init_pair(2, COLOR_CYAN, COLOR_BLACK);
 
 	/* Create items */
-	/* Lot's of repitition here. Surely can be wrapped in a function */
+	/* Can't really avoid finding array sizes here */
 	n_exposure = ARRAY_SIZE(exposure_array);
 	n_iso = ARRAY_SIZE(iso_array);
 	n_shutter = ARRAY_SIZE(shutter_array);
 	n_aperture = ARRAY_SIZE(aperture_array);
-	exposure_items = (ITEM **)calloc(n_exposure, sizeof(ITEM *));
-	for(i = 0; i < n_exposure; ++i) {
-		exposure_items[i] = new_item(exposure_array[i], exposure_array[i]);
-		set_item_userptr(exposure_items[i], selection);
-	}
-	iso_items = (ITEM **)calloc(n_iso, sizeof(ITEM *));
-	for(i = 0; i < n_iso; ++i) {
-		iso_items[i] = new_item(iso_array[i], iso_array[i]);
-		set_item_userptr(iso_items[i], selection);
-	}
-	shutter_items = (ITEM **)calloc(n_shutter, sizeof(ITEM *));
-	for(i = 0; i < n_shutter; ++i) {
-		shutter_items[i] = new_item(shutter_array[i], shutter_array[i]);
-		set_item_userptr(shutter_items[i], selection);
-	}
-	aperture_items = (ITEM **)calloc(n_aperture, sizeof(ITEM *));
-	for(i = 0; i < n_aperture; ++i) {
-		aperture_items[i] = new_item(aperture_array[i], aperture_array[i]);
-		set_item_userptr(aperture_items[i], selection);
-	}
-
-	/* Create menu */
-	exposure_menu = new_menu((ITEM **)exposure_items);
-	iso_menu = new_menu((ITEM **)iso_items);
-	shutter_menu = new_menu((ITEM **)shutter_items);
-	aperture_menu = new_menu((ITEM **)aperture_items);
-
-	/* Create the window to be associated with the menu */
-	exposure_win = newwin(10, 40, 4, 4);
-	keypad(exposure_win, TRUE);
-	iso_win = newwin(10, 40, 4, 45);
-	keypad(iso_win, TRUE);
-	shutter_win = newwin(10, 40, 4, 86);
-	keypad(shutter_win, TRUE);
-	aperture_win = newwin(10, 40, 4, 127);
-	keypad(aperture_win, TRUE);
-
-	/* Set main window and sub window */
-	set_menu_win(exposure_menu, exposure_win);
-	set_menu_sub(exposure_menu, derwin(exposure_win, 6, 38, 3, 1));
-	set_menu_win(iso_menu, iso_win);
-	set_menu_sub(iso_menu, derwin(iso_win, 6, 38, 3, 1));
-	set_menu_win(shutter_menu, shutter_win);
-	set_menu_sub(shutter_menu, derwin(shutter_win, 6, 38, 3, 1));
-	set_menu_win(aperture_menu, aperture_win);
-	set_menu_sub(aperture_menu, derwin(aperture_win, 6, 38, 3, 1));
-	set_menu_format(exposure_menu, 5, 1);
-	set_menu_format(iso_menu, 5, 1);
-	set_menu_format(shutter_menu, 5, 1);
-	set_menu_format(aperture_menu, 5, 1);
-
-	/* Set menu mark to the string " * " */
-	set_menu_mark(exposure_menu, " * ");
-	set_menu_mark(iso_menu, " * ");
-	set_menu_mark(shutter_menu, " * ");
-	set_menu_mark(aperture_menu, " * ");
-
-	/* Print a border around the main window and print a title */
-	box(exposure_win, 0, 0);
-	box(iso_win, 0, 0);
-	box(shutter_win, 0, 0);
-	box(aperture_win, 0, 0);
-	print_in_middle(exposure_win, 1, 0, 40, "EV", COLOR_PAIR(1));
-	print_in_middle(iso_win, 1, 0, 40, "ISO", COLOR_PAIR(1));
-	print_in_middle(shutter_win, 1, 0, 40, "Shutter", COLOR_PAIR(1));
-	print_in_middle(aperture_win, 1, 0, 40, "Aperture", COLOR_PAIR(1));
-	mvwaddch(exposure_win, 2, 0, ACS_LTEE);
-	mvwaddch(iso_win, 2, 0, ACS_LTEE);
-	mvwaddch(shutter_win, 2, 0, ACS_LTEE);
-	mvwaddch(aperture_win, 2, 0, ACS_LTEE);
-	mvwhline(exposure_win, 2, 1, ACS_HLINE, 38);
-	mvwhline(iso_win, 2, 1, ACS_HLINE, 38);
-	mvwhline(shutter_win, 2, 1, ACS_HLINE, 38);
-	mvwhline(aperture_win, 2, 1, ACS_HLINE, 38);
-	mvwaddch(exposure_win, 2, 39, ACS_RTEE);
-	mvwaddch(iso_win, 2, 39, ACS_RTEE);
-	mvwaddch(shutter_win, 2, 39, ACS_RTEE);
-	mvwaddch(aperture_win, 2, 39, ACS_RTEE);
-
-	/* Post the menu */
-	post_menu(exposure_menu);
-	post_menu(iso_menu);
-	post_menu(shutter_menu);
-	post_menu(aperture_menu);
-	wrefresh(exposure_win);
-	wrefresh(iso_win);
-	wrefresh(shutter_win);
-	wrefresh(aperture_win);
+	add_menu(exposure_array, exposure_items, exposure_menu, exposure_win, n_exposure, 4, "EV");
+	add_menu(iso_array, iso_items, iso_menu, iso_win, n_iso, 45, "ISO");
+	add_menu(shutter_array, shutter_items, shutter_menu, shutter_win, n_shutter, 86, "Shutter");
+	add_menu(aperture_array, aperture_items, aperture_menu, aperture_win, n_aperture, 127, "Aperture");
 
 	attron(COLOR_PAIR(2));
 	mvprintw(LINES - 2, 0, "Select EV");
@@ -255,6 +173,7 @@ int main() {
 				cur = current_item(*menu);
 				p = item_userptr(cur);
 				/* Learning notes - Don't understand this bit */
+				/* Is this a function pointer? */
 				p((char *)item_name(cur));
 				
 				switch (selection_counter) {
@@ -335,23 +254,44 @@ int main() {
 		wrefresh(*win);
 	}	
 	/* Unpost and free all the memory taken up */
-	unpost_menu(exposure_menu);
-	unpost_menu(iso_menu);
-	unpost_menu(shutter_menu);
-	unpost_menu(aperture_menu);
-	free_menu(exposure_menu);
-	free_menu(iso_menu);
-	free_menu(shutter_menu);
-	free_menu(aperture_menu);
-	for(i = 0; i < n_exposure; ++i)
-		free_item(iso_items[i]);
-	for(i = 0; i < n_iso; ++i)
-		free_item(iso_items[i]);
-	for(i = 0; i < n_shutter; ++i)
-		free_item(shutter_items[i]);
-	for(i = 0; i < n_aperture; ++i)
-		free_item(aperture_items[i]);
+	remove_menu(exposure_items, exposure_menu, n_exposure);
+	remove_menu(iso_items, iso_menu, n_iso);
+	remove_menu(shutter_items, shutter_menu, n_shutter);
+	remove_menu(aperture_items, aperture_menu, n_aperture);
 	endwin();
+}
+
+void add_menu(char **array, ITEM **items, MENU *men, WINDOW *win, int n, int xpos, char *title) {
+	int i;
+
+	items = (ITEM **)calloc(n, sizeof(ITEM *));
+	for(i = 0; i<n; ++i) {
+		items[i] = new_item(array[i], array[i]);
+		set_item_userptr(items[i], selection);
+	}
+	men = new_menu((ITEM **)items);
+	win = newwin(10, 40, 4, xpos);
+	keypad(win, TRUE);
+	set_menu_win(men, win);
+	set_menu_sub(men, derwin(win, 6, 38, 3, 1));
+	set_menu_format(men, 5, 1);
+	set_menu_mark(men, " * ");
+	box(win, 0, 0);
+	print_in_middle(win, 1, 0, 40, title, COLOR_PAIR(1));
+	mvwaddch(win, 2, 0, ACS_LTEE);
+	mvwhline(win, 2, 1, ACS_HLINE, 38);
+	mvwaddch(win, 2, 39, ACS_RTEE);
+	post_menu(men);
+	wrefresh(win);
+}
+
+void remove_menu(ITEM **items, MENU *men, int n) {
+	int i;
+
+	unpost_menu(men);
+	free_menu(men);
+	for(i = 0; i < n; ++i)
+		free_item(items[i]);
 }
 
 void print_in_middle(WINDOW *win, int starty, int startx, int width, char *string, chtype color) {
