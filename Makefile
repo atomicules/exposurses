@@ -11,13 +11,13 @@ options:
 	@echo build options:
 	@echo "CC       = ${CC}"
 
-.c.o:
-	@echo CC $<
-	@${CC} -c $<
-
 exposurses: ${OBJ}
 	@echo CC -o $@
-	@${CC} -o $@ ${OBJ} ${LDFLAGS}
+	@${CC} -s ${LIBS} ${SRC} -o $@ 
+
+debug: 
+	@echo "Building with debug symbols"	
+	@${CC} -g ${LIBS} ${SRC} -o exposurses
 
 clean:
 	@echo cleaning
