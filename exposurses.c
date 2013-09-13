@@ -137,6 +137,7 @@ int main() {
 	iso_win = add_window(45, "ISO");
 	shutter_win = add_window(86, "Shutter");
 	aperture_win = add_window(127, "Aperture");
+	/* Don't know how to avoid the repition below */
 	set_menu_win(exposure_menu, exposure_win);
 	set_menu_win(iso_menu, iso_win);
 	set_menu_win(shutter_menu, shutter_win);
@@ -231,7 +232,7 @@ int main() {
 								shutter_menu,
 								shutter_array[nearest_match(
 									shutter(exposure(atoi(iso_sel)), strtod(aperture_sel_, NULL)),
-									2
+									3
 								)]
 							);
 							menu_driver(shutter_menu, REQ_DOWN_ITEM);
@@ -245,7 +246,7 @@ int main() {
 								aperture_menu,
 								aperture_array[nearest_match(
 									aperture(exposure(atoi(iso_sel)), fraction_to_double(shutter_sel)),
-									3
+									4
 								)]
 							);
 							menu_driver(aperture_menu, REQ_DOWN_ITEM);
@@ -384,13 +385,10 @@ int nearest_match (double x, int menu) {
 
 	/* Need a starting value for difference */
 	switch(menu) {
-		case 1:
-			array_value_db = strtod(iso_array[0], NULL);
-			break;
-		case 2:
+		case 3:
 			array_value_db = fraction_to_double(shutter_array[0]);
 			break;
-		case 3:
+		case 4:
 			strncpy(array_value_str, aperture_array[0]+2, 4);
 			array_value_db = strtod(array_value_str, NULL);
 			break;
@@ -398,16 +396,7 @@ int nearest_match (double x, int menu) {
 	diff = fabs(array_value_db - x);
 	/* lots of repetition here but pointers to arrays seem to be a bad thing */
 	switch(menu) {
-		case 1:
-			for ( n = 1; iso_array[n] != NULL; ++n ) {
-				array_value_db = strtod(iso_array[n], NULL);
-				if (fabs(array_value_db - x) < diff) { 
-					diff_idx = n;
-					diff = fabs(array_value_db - x);
-				}
-			}
-			break;
-		case 2:
+		case 3:
 			for ( n = 1; shutter_array[n] != NULL; ++n ) {
 				array_value_db = fraction_to_double(shutter_array[n]);
 				if (fabs(array_value_db - x) < diff) {
@@ -416,7 +405,7 @@ int nearest_match (double x, int menu) {
 				}
 			}
 			break;
-		case 3:
+		case 4:
 			for ( n = 1; aperture_array[n] != NULL; ++n ) {
 				strncpy(array_value_str, aperture_array[n]+2, 4);
 				array_value_db = strtod(array_value_str, NULL);
