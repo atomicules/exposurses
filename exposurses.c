@@ -31,7 +31,7 @@ char *exposure_array[] = {
 	"13",		
 	"14",		
 	"15",		
-	"16",		
+	"16",
 	NULL
 };
 
@@ -47,6 +47,7 @@ char *iso_array[] = {
 };
 
 char *shutter_array[] = {
+	"OVER",
 	"1/1000",
 	"1/500",
 	"1/250",
@@ -58,10 +59,12 @@ char *shutter_array[] = {
 	"1/4",
 	"1/2",
 	"1",
+	"UNDER",
 	NULL
 };
 
 char *aperture_array[] = {
+	"UNDER",
 	"f/1.4",
 	"f/2",
 	"f/2.8",
@@ -70,6 +73,7 @@ char *aperture_array[] = {
 	"f/8",
 	"f/11",
 	"f/16",
+	"OVER",
 	NULL
 };
 
@@ -94,7 +98,7 @@ WINDOW *add_window(int xpos, char *title);
 int exposure(int iso);
 double shutter(int exposure, double aperture);
 double aperture(int exposure, double shutter);
-int nearest_match(double x, int menu);
+int nearest_match(double x, int menu, int n_array);
 double fraction_to_double(char *fraction);
 /* No one will ever need more than 9 bytes! */
 char exposure_sel[9] = "";
@@ -232,7 +236,8 @@ int main() {
 								shutter_menu,
 								shutter_array[nearest_match(
 									shutter(exposure(atoi(iso_sel)), strtod(aperture_sel_, NULL)),
-									3
+									3,
+									n_shutter
 								)]
 							);
 							menu_driver(shutter_menu, REQ_DOWN_ITEM);
@@ -246,7 +251,8 @@ int main() {
 								aperture_menu,
 								aperture_array[nearest_match(
 									aperture(exposure(atoi(iso_sel)), fraction_to_double(shutter_sel)),
-									4
+									4,
+									n_aperture
 								)]
 							);
 							menu_driver(aperture_menu, REQ_DOWN_ITEM);
@@ -375,10 +381,10 @@ double aperture (int exposure, double shutter) {
 	return sqrt(pow(2, exposure) * shutter);
 }
 
-int nearest_match (double x, int menu) {
+int nearest_match (double x, int menu, int n_array) {
 	/* Need to search array for closest match */
 	int n;
-	int diff_idx = 0;
+	int diff_idx = 1;
 	char array_value_str[9];
 	double array_value_db;
 	double diff;
@@ -386,27 +392,40 @@ int nearest_match (double x, int menu) {
 	/* Need a starting value for difference */
 	switch(menu) {
 		case 3:
-			array_value_db = fraction_to_double(shutter_array[0]);
+			array_value_db = fraction_to_double(shutter_array[1]);
 			break;
 		case 4:
-			strncpy(array_value_str, aperture_array[0]+2, 4);
+			strncpy(array_value_str, aperture_array[1]+2, 4);
 			array_value_db = strtod(array_value_str, NULL);
 			break;
 	}
 	diff = fabs(array_value_db - x);
 	/* lots of repetition here but pointers to arrays seem to be a bad thing */
+	/* Could do from n = 3 (2 above) until != under/over
+	 * but also need to do something like if diff is more than twice max/min then under/over */
 	switch(menu) {
 		case 3:
-			for ( n = 1; shutter_array[n] != NULL; ++n ) {
+			for ( n = 2; n < n_array-2; ++n ) {
 				array_value_db = fraction_to_double(shutter_array[n]);
 				if (fabs(array_value_db - x) < diff) {
 					diff_idx = n;
 					diff = fabs(array_value_db - x);
 				}
 			}
+			/* Check if at extremities and then if under/over exposed */
+			if (diff_idx == 1) {
+				if (diff >= fraction_to_double(shutter_array[1])/2) { /* diff is greater than diff of next one down minus max/min */
+					diff_idx = 0;
+				}
+			}
+			if (diff_idx == n_array-3) {
+				if (diff >= fraction_to_double(shutter_array[n_array-3])*2) {
+					diff_idx = n_array-2;	
+				}
+			}
 			break;
 		case 4:
-			for ( n = 1; aperture_array[n] != NULL; ++n ) {
+			for ( n = 2; n < n_array-2; ++n ) {
 				strncpy(array_value_str, aperture_array[n]+2, 4);
 				array_value_db = strtod(array_value_str, NULL);
 				if (fabs(array_value_db - x) < diff) { 
@@ -414,6 +433,22 @@ int nearest_match (double x, int menu) {
 					diff = fabs(array_value_db - x);
 				}
 			}
+			/* Apertures similarly. Although progression is fiddlier.*/
+			if (diff_idx == 1) {
+				strncpy(array_value_str, aperture_array[1]+2, 4);
+				array_value_db = strtod(array_value_str, NULL);
+				if (diff >= array_value_db/sqrt(2.0)) { /* diff is greater than diff of next one down minus max/min */
+					diff_idx = 0;
+				}
+			}
+			if (diff_idx == n_array-3) {
+				strncpy(array_value_str, aperture_array[n_array-3]+2, 4);
+				array_value_db = strtod(array_value_str, NULL);
+				if (diff >= array_value_db*sqrt(2.0)) {
+					diff_idx = n_array-2;	
+				}
+			}
+
 			break;
 	}
 	return diff_idx;
