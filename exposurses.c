@@ -200,80 +200,93 @@ int main() {
 				/* Learning notes - Don't understand this bit */
 				/* Is this a function pointer? */
 				p((char *)item_name(cur));
-				
-				switch (selection_counter) {
-					case 1: { /* Exposure selected */
-						selection_counter += 1;
-						menu_counter += 1;
-						move(LINES - 2, 0);
-						clrtoeol();
-						mvprintw(LINES - 2, 0, "Select ISO");
-						refresh();
-						menu = &iso_menu;
-						win = &iso_win;
-					}
-					break;
-					case 2: { /* ISO Selected */
-						selection_counter += 1;
-						menu_counter += 1;
-						move(LINES - 2, 0);
-						clrtoeol();
-						mvprintw(LINES - 2, 0, "Select Shutter or Aperture");
-						refresh();
-						menu = &shutter_menu;
-						win = &shutter_win;
-					}
-					break;
-					case 3: { /* Shutter or Aperture selected */
-						if (strcmp("", shutter_sel) == 0) {
-							char aperture_sel_[4] = "";
-							strncpy(aperture_sel_, aperture_sel+2, 3);
-							/* Using menu_driver to go up/down to force refresh and correct highlighting */
-							menu_driver(shutter_menu, REQ_SCR_UPAGE);
-							menu_driver(shutter_menu, REQ_SCR_DPAGE);
-							/* There is probably a nicer way to format the below */
-							set_menu_pattern(
-								shutter_menu,
-								shutter_array[nearest_match(
-									shutter(exposure(atoi(iso_sel)), strtod(aperture_sel_, NULL)),
-									3,
-									n_shutter
-								)]
-							);
-							menu_driver(shutter_menu, REQ_DOWN_ITEM);
-							menu_driver(shutter_menu, REQ_UP_ITEM);
-							wrefresh(shutter_win);
+				/* need to igore over/under if selected, probably easier than try to prevent selection */
+				if (!((strcmp("OVER", shutter_sel) == 0)
+						|| (strcmp("UNDER", shutter_sel) == 0) 
+						|| (strcmp("OVER", aperture_sel) == 0) 
+						|| (strcmp("UNDER", aperture_sel) == 0))) {
+					switch (selection_counter) {
+						case 1: { /* Exposure selected */
+							selection_counter += 1;
+							menu_counter += 1;
+							move(LINES - 2, 0);
+							clrtoeol();
+							mvprintw(LINES - 2, 0, "Select ISO");
+							refresh();
+							menu = &iso_menu;
+							win = &iso_win;
 						}
-						if (strcmp("", aperture_sel) == 0) {
-							menu_driver(aperture_menu, REQ_SCR_UPAGE);
-							menu_driver(aperture_menu, REQ_SCR_DPAGE);
-							set_menu_pattern(
-								aperture_menu,
-								aperture_array[nearest_match(
-									aperture(exposure(atoi(iso_sel)), fraction_to_double(shutter_sel)),
-									4,
-									n_aperture
-								)]
-							);
-							menu_driver(aperture_menu, REQ_DOWN_ITEM);
-							menu_driver(aperture_menu, REQ_UP_ITEM);
-							wrefresh(aperture_win);
+						break;
+						case 2: { /* ISO Selected */
+							selection_counter += 1;
+							menu_counter += 1;
+							move(LINES - 2, 0);
+							clrtoeol();
+							mvprintw(LINES - 2, 0, "Select Shutter or Aperture");
+							refresh();
+							menu = &shutter_menu;
+							win = &shutter_win;
 						}
-						/* clear the selections for next time */
-						strcpy(iso_sel, "");
-						strcpy(shutter_sel, "");
-						strcpy(aperture_sel, "");
-						/* And set defaults back to start */
-						selection_counter = 1;
-						menu_counter = 1;
-						menu = &exposure_menu;
-						win = &exposure_win;
-						move(LINES - 2, 0);
-						clrtoeol();
-						mvprintw(LINES - 2, 0, "Select EV");
-						refresh();
+						break;
+						case 3: { /* Shutter or Aperture selected */
+							if (strcmp("", shutter_sel) == 0) {
+								char aperture_sel_[4] = "";
+								strncpy(aperture_sel_, aperture_sel+2, 3);
+								/* Using menu_driver to go up/down to force refresh and correct highlighting */
+								menu_driver(shutter_menu, REQ_SCR_UPAGE);
+								menu_driver(shutter_menu, REQ_SCR_DPAGE);
+								/* There is probably a nicer way to format the below */
+								set_menu_pattern(
+									shutter_menu,
+									shutter_array[nearest_match(
+										shutter(exposure(atoi(iso_sel)), strtod(aperture_sel_, NULL)),
+										3,
+										n_shutter
+									)]
+								);
+								menu_driver(shutter_menu, REQ_DOWN_ITEM);
+								menu_driver(shutter_menu, REQ_UP_ITEM);
+								wrefresh(shutter_win);
+							}
+							if (strcmp("", aperture_sel) == 0) {
+								menu_driver(aperture_menu, REQ_SCR_UPAGE);
+								menu_driver(aperture_menu, REQ_SCR_DPAGE);
+								set_menu_pattern(
+									aperture_menu,
+									aperture_array[nearest_match(
+										aperture(exposure(atoi(iso_sel)), fraction_to_double(shutter_sel)),
+										4,
+										n_aperture
+									)]
+								);
+								menu_driver(aperture_menu, REQ_DOWN_ITEM);
+								menu_driver(aperture_menu, REQ_UP_ITEM);
+								wrefresh(aperture_win);
+							}
+							/* clear the selections for next time */
+							strcpy(iso_sel, "");
+							strcpy(shutter_sel, "");
+							strcpy(aperture_sel, "");
+							/* And set defaults back to start */
+							selection_counter = 1;
+							menu_counter = 1;
+							menu = &exposure_menu;
+							win = &exposure_win;
+							move(LINES - 2, 0);
+							clrtoeol();
+							mvprintw(LINES - 2, 0, "Select EV");
+							refresh();
+						}
+						break;
 					}
-					break;
+				}
+				/* If over/under need to clear selection so know which is blank
+				 * when a proper selection is made */
+				if ((strcmp("OVER", shutter_sel) == 0) || (strcmp("UNDER", shutter_sel) == 0)) {
+					strcpy(shutter_sel, "");
+				}
+				if ((strcmp("OVER", aperture_sel) == 0) || (strcmp("UNDER", aperture_sel) == 0)) {
+					strcpy(aperture_sel, "");
 				}
 			}
 			break;
