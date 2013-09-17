@@ -93,8 +93,9 @@ WINDOW *aperture_win;
 void selection(char *name);
 void remove_menu(ITEM **items, MENU *men, int n);
 void print_in_middle(WINDOW *win, int starty, int startx, int width, char *string, chtype color);
-MENU *add_menu(char **array, ITEM **items, int n);
+MENU *add_menu(ITEM **items);
 WINDOW *add_window(int xpos, char *title);
+ITEM **add_item(char **array, int n);
 int exposure(int iso);
 double shutter(int exposure, double aperture);
 double aperture(int exposure, double shutter);
@@ -133,10 +134,14 @@ int main() {
 	n_iso = ARRAY_SIZE(iso_array);
 	n_shutter = ARRAY_SIZE(shutter_array);
 	n_aperture = ARRAY_SIZE(aperture_array);
-	exposure_menu = add_menu(exposure_array, exposure_items, n_exposure);
-	iso_menu = add_menu(iso_array, iso_items, n_iso);
-	shutter_menu = add_menu(shutter_array, shutter_items, n_shutter);
-	aperture_menu = add_menu(aperture_array, aperture_items, n_aperture);
+	exposure_items = add_item(exposure_array, n_exposure);
+	iso_items = add_item(iso_array, n_iso);
+	aperture_items = add_item(aperture_array, n_aperture);
+	shutter_items = add_item(shutter_array, n_shutter);
+	exposure_menu = add_menu(exposure_items);
+	iso_menu = add_menu(iso_items);
+	shutter_menu = add_menu(shutter_items);
+	aperture_menu = add_menu(aperture_items);
 	exposure_win = add_window(4, "EV");
 	iso_win = add_window(45, "ISO");
 	shutter_win = add_window(86, "Shutter");
@@ -301,15 +306,23 @@ int main() {
 	endwin();
 }
 
-MENU *add_menu(char **array, ITEM **items, int n) {
+/* Below pointer configuration figured out from:
+ * https://github.com/Yurickh/Psycho-Tetris/blob/master/src/menu.c#L9 */
+ITEM **add_item(char **array, int n) {
 	int i;
+	ITEM **local_items;
+
+	local_items = (ITEM **)calloc(n, sizeof(ITEM *));
+	for(i = 0; i<n; ++i) {
+		local_items[i] = new_item(array[i], array[i]);
+		set_item_userptr(local_items[i], selection);
+	}
+	return local_items;
+}
+
+MENU *add_menu(ITEM **items) {
 	MENU *local_menu;
 
-	items = (ITEM **)calloc(n, sizeof(ITEM *));
-	for(i = 0; i<n; ++i) {
-		items[i] = new_item(array[i], array[i]);
-		set_item_userptr(items[i], selection);
-	}
 	local_menu = new_menu((ITEM **)items);
 	set_menu_format(local_menu, 5, 1);
 	set_menu_mark(local_menu, " * ");
