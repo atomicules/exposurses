@@ -165,12 +165,11 @@ int main() {
 	wrefresh(aperture_win);
 	attron(COLOR_PAIR(2));
 	mvprintw(LINES - 2, 0, "Select EV");
-	/*mvprintw(LINES - 2, 0, "Select ISO and then one of Shutter/Aperture to calculate other of Shutter/Aperture");*/
 	mvprintw(LINES - 1, 0, "Arrow keys to navigate, Enter to select, Q to exit");
 	attroff(COLOR_PAIR(2));
 	refresh();
 
-	/* set default menu */
+	/* Set default menu */
 	menu = &exposure_menu;
 	win = &exposure_win;
 
@@ -202,10 +201,9 @@ int main() {
 
 				cur = current_item(*menu);
 				p = item_userptr(cur);
-				/* Learning notes - Don't understand this bit */
-				/* Is this a function pointer? */
+				/* Learning notes - Don't understand this bit. Is this a function pointer? */
 				p((char *)item_name(cur));
-				/* need to igore over/under if selected, probably easier than try to prevent selection */
+				/* Need to igore over/under if selected, probably easier than try to prevent selection */
 				if (!((strcmp("OVER", shutter_sel) == 0)
 						|| (strcmp("UNDER", shutter_sel) == 0) 
 						|| (strcmp("OVER", aperture_sel) == 0) 
@@ -268,7 +266,7 @@ int main() {
 								menu_driver(aperture_menu, REQ_UP_ITEM);
 								wrefresh(aperture_win);
 							}
-							/* clear the selections for next time */
+							/* Clear the selections for next time */
 							strcpy(iso_sel, "");
 							strcpy(shutter_sel, "");
 							strcpy(aperture_sel, "");
@@ -285,8 +283,7 @@ int main() {
 						break;
 					}
 				}
-				/* If over/under need to clear selection so know which is blank
-				 * when a proper selection is made */
+				/* If over/under need to clear selection so know which is blank when a proper selection is made */
 				if ((strcmp("OVER", shutter_sel) == 0) || (strcmp("UNDER", shutter_sel) == 0)) {
 					strcpy(shutter_sel, "");
 				}
@@ -426,9 +423,7 @@ int nearest_match (double x, int menu, int n_array) {
 			break;
 	}
 	diff = fabs(array_value_db - x);
-	/* lots of repetition here but pointers to arrays seem to be a bad thing */
-	/* Could do from n = 3 (2 above) until != under/over
-	 * but also need to do something like if diff is more than twice max/min then under/over */
+	/* Lots of repetition here but pointers to arrays seem to be a bad thing */
 	switch(menu) {
 		case 3:
 			for ( n = 2; n < n_array-2; ++n ) {
@@ -440,7 +435,8 @@ int nearest_match (double x, int menu, int n_array) {
 			}
 			/* Check if at extremities and then if under/over exposed */
 			if (diff_idx == 1) {
-				if (diff >= fraction_to_double(shutter_array[1])/2) { /* diff is greater than diff of next one down minus max/min */
+				if (diff >= fraction_to_double(shutter_array[1])/2) { 
+					/* diff is greater than diff of next one down minus max/min */
 					diff_idx = 0;
 				}
 			}
@@ -463,7 +459,8 @@ int nearest_match (double x, int menu, int n_array) {
 			if (diff_idx == 1) {
 				strncpy(array_value_str, aperture_array[1]+2, 4);
 				array_value_db = strtod(array_value_str, NULL);
-				if (diff >= array_value_db/sqrt(2.0)) { /* diff is greater than diff of next one down minus max/min */
+				if (diff >= array_value_db/sqrt(2.0)) {
+					/* diff is greater than diff of next one down minus max/min */
 					diff_idx = 0;
 				}
 			}
