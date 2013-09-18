@@ -108,6 +108,8 @@ char shutter_sel[9] = "";
 char aperture_sel[9] = "";
 int selection_counter = 1;
 int menu_counter = 1;
+int menu_width = 25;
+int menu_padding = 3;
 
 int main() {
 	int c;
@@ -143,18 +145,18 @@ int main() {
 	shutter_menu = add_menu(shutter_items);
 	aperture_menu = add_menu(aperture_items);
 	exposure_win = add_window(4, "EV");
-	iso_win = add_window(45, "ISO");
-	shutter_win = add_window(86, "Shutter");
-	aperture_win = add_window(127, "Aperture");
-	/* Don't know how to avoid the repition below */
+	iso_win = add_window(4 + menu_width + menu_padding, "ISO");
+	shutter_win = add_window(4 + 2*(menu_width + menu_padding), "Shutter");
+	aperture_win = add_window(4 + 3*(menu_width + menu_padding), "Aperture");
+	/* Don't know how to avoid the repetion below */
 	set_menu_win(exposure_menu, exposure_win);
 	set_menu_win(iso_menu, iso_win);
 	set_menu_win(shutter_menu, shutter_win);
 	set_menu_win(aperture_menu, aperture_win);
-	set_menu_sub(exposure_menu, derwin(exposure_win, 6, 38, 3, 1));
-	set_menu_sub(iso_menu, derwin(iso_win, 6, 38, 3, 1));
-	set_menu_sub(shutter_menu, derwin(shutter_win, 6, 38, 3, 1));
-	set_menu_sub(aperture_menu, derwin(aperture_win, 6, 38, 3, 1));
+	set_menu_sub(exposure_menu, derwin(exposure_win, 6, menu_width, 3, 1));
+	set_menu_sub(iso_menu, derwin(iso_win, 6, menu_width, 3, 1));
+	set_menu_sub(shutter_menu, derwin(shutter_win, 6, menu_width, 3, 1));
+	set_menu_sub(aperture_menu, derwin(aperture_win, 6, menu_width, 3, 1));
 	post_menu(exposure_menu);
 	post_menu(iso_menu);
 	post_menu(shutter_menu);
@@ -329,13 +331,13 @@ MENU *add_menu(ITEM **items) {
 WINDOW *add_window(int xpos, char *title) {
 	WINDOW *local_win;
 
-	local_win = newwin(10, 40, 4, xpos);
+	local_win = newwin(10, menu_width+2, 4, xpos);
 	keypad(local_win, TRUE);
 	box(local_win, 0, 0);
-	print_in_middle(local_win, 1, 0, 40, title, COLOR_PAIR(1));
+	print_in_middle(local_win, 1, 0, menu_width+2, title, COLOR_PAIR(1));
 	mvwaddch(local_win, 2, 0, ACS_LTEE);
-	mvwhline(local_win, 2, 1, ACS_HLINE, 38);
-	mvwaddch(local_win, 2, 39, ACS_RTEE);
+	mvwhline(local_win, 2, 1, ACS_HLINE, menu_width);
+	mvwaddch(local_win, 2, menu_width+1, ACS_RTEE);
 	return local_win;
 }
 
