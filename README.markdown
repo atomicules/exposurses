@@ -1,8 +1,6 @@
 #Exposurses
 
-A little learning exercise in C and Curses/NCurses
-
-See http://en.wikipedia.org/wiki/Exposure_value
+A little [exposure](http://en.wikipedia.org/wiki/Exposure_value) calculator in C and Ncurses as a learning exercise.
 
 ![](./exposurses.png)
 
